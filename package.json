@@ -1,5 +1,5 @@
 {
-  "version": "rc1.0.0",
+  "version": "1.0.0",
   "name": "gulp-assembly-rev-manifest",
   "description": "Manifest simple json file based on md5 hash.",
   "keywords": [
