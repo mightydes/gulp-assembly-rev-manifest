@@ -1,0 +1,1 @@
+# gulp-assembly-rev-manifest
