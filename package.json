@@ -1,0 +1,30 @@
+{
+  "version": "rc1.0.0",
+  "name": "gulp-assembly-rev-manifest",
+  "description": "Manifest simple json file based on md5 hash.",
+  "keywords": [
+    "gulp",
+    "assembly",
+    "rev",
+    "manifest"
+  ],
+  "author": {
+    "name": "Lev Nazarenko",
+    "email": "lynazarenko@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com:mightydes/gulp-assembly-rev-manifest.git"
+  },
+  "homepage": "https://github.com/mightydes/gulp-assembly-rev-manifest",
+  "bugs": {
+    "url": "https://github.com/mightydes/gulp-assembly-rev-manifest/issues"
+  },
+  "license": "MIT",
+  "main": "src/index.js",
+  "dependencies": {
+    "through2": "^2.0",
+    "underscore": "^1.8"
+  },
+  "devDependencies": {}
+}
