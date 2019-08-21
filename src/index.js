@@ -1,73 +1,52 @@
 const through = require('through2');
 const crypto = require('crypto');
-const path = require('path');
-const fs = require('fs');
-const _ = require('underscore');
+const Vinyl = require('vinyl');
 
-let _manifest = {};
-
-module.exports = function (options) {
-    options || (options = {});
-    let revInstance = new Rev(options);
+/**
+ * @param {Object|null} options
+ * @option {Function} 'calcHash' -- optional
+ * @option {Function} 'transformPath' -- optional
+ * @returns {*}
+ */
+module.exports = function (options = {}) {
+    let revData;
     return through.obj(function (file, encoding, callback) {
-        callback(null, revInstance.handle(file));
+        revData = handleFile(file, options);
+        callback(null, file);
+    }, function (callback) {
+        this.push(createRevFile(revData, options));
+        callback(null);
     });
 };
 
-function Rev(options) {
-    if (!options.dest) {
-        options.dest = process.cwd();
-    }
-    if (!options.filename) {
-        options.filename = 'rev-manifest.json';
-    }
 
-    let _containerKey = path.join(options.dest, options.filename);
-    if (!_.has(_manifest, _containerKey)) {
-        createContainer();
-    }
+// FUNCTIONS:
 
-    return {
-        handle: handle
-    };
-
-
-    // FUNCTIONS:
-
-    function createContainer() {
-        _manifest[_containerKey] = {};
-        process.on('exit', () => {
-            if (!_.isEmpty(_manifest)) {
-                let manifestFilePath = path.join(options.dest, options.filename);
-                let out;
-                try {
-                    let jsonStr = fs.readFileSync(manifestFilePath);
-                    out = JSON.parse(jsonStr);
-                } catch (e) {
-                    out = {};
-                }
-                out = Object.assign(out, _manifest[_containerKey]);
-                fs.writeFileSync(manifestFilePath, JSON.stringify(out));
-            }
-        });
-    }
-
-    function handle(file) {
-        let hash = crypto.createHash('md5').update(file.contents).digest('hex');
+function handleFile(file, options = {}) {
+    let hash;
+    if (typeof options.calcHash === 'function') {
+        hash = options.calcHash(file);
+    } else {
+        hash = crypto.createHash('md5').update(file.contents).digest('hex');
         hash = hash.substr(0, 8);
-
-        let filename = file.path;
-        let slashIdx = filename.lastIndexOf('/');
-        if (slashIdx > -1) {
-            filename = filename.substr(slashIdx + 1);
-        }
-
-        merge(filename, hash);
-
-        return file;
     }
+    return {
+        file: file,
+        hash: hash
+    };
+}
 
-    function merge(filename, hash) {
-        _manifest[_containerKey][filename] = hash;
+function createRevFile(revData, options = {}) {
+    const path = typeof options.transformPath === 'function'
+        ? options.transformPath(revData.file.path)
+        : `${revData.file.path}.rev.txt`;
+    if (path === revData.file.path) {
+        throw new Error(`[gulp-assembly-rev-manifest] The RevFile path must be different from the OrigFile path!`);
     }
+    let revFile = {
+        path: path,
+        contents: Buffer.from(revData.hash)
+    };
+    ['cwd', 'base'].map((key) => revFile[key] = revData.file[key]);
+    return new Vinyl(revFile);
 }

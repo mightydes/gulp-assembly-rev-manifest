@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "2.0.0",
   "name": "gulp-assembly-rev-manifest",
   "description": "Manifest simple json file based on md5 hash.",
   "keywords": [
@@ -23,8 +23,7 @@
   "license": "MIT",
   "main": "src/index.js",
   "dependencies": {
-    "through2": "^2.0",
-    "underscore": "^1.8"
+    "through2": "^2.0"
   },
   "devDependencies": {}
 }

@@ -1,13 +1,21 @@
 # gulp-assembly-rev-manifest
 
-Manifest simple `rev-mainfest.json` file based on md5 hash.
+---
 
-For example:
+## Usage
 
-```json
-{
-  "website.css": "901e18f4",
-  "website-lib.js": "2b8a2e3f",
-  "website.js": "4bfd06e9"
-}
+```js
+const gulp = require('gulp');
+const $ = require('gulp-load-plugins')();
+
+gulp.src('...')
+    // ...
+    .pipe($.concat('sample.js'))
+    .pipe($.assemblyRevManifest())
+    .pipe(gulp.dest('...'));
+
+// Outputs -> 'sample.js.rev.txt' with the calculated hash slug inside.
+
 ```
+
+---
