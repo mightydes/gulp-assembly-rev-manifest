@@ -9,18 +9,30 @@ const Vinyl = require('vinyl');
  * @returns {*}
  */
 module.exports = function (options = {}) {
-    let revData;
     return through.obj(function (file, encoding, callback) {
-        revData = handleFile(file, options);
+        this.push(performRevFile(file, options));
         callback(null, file);
-    }, function (callback) {
-        this.push(createRevFile(revData, options));
-        callback(null);
     });
 };
 
 
 // FUNCTIONS:
+
+function performRevFile(file, options = {}) {
+    const revData = handleFile(file, options);
+    const path = typeof options.transformPath === 'function'
+        ? options.transformPath(revData.file.path)
+        : `${revData.file.path}.rev.txt`;
+    if (path === revData.file.path) {
+        throw new Error(`[gulp-assembly-rev-manifest] The RevFile path must be different from the OrigFile path!`);
+    }
+    let revFile = {
+        path: path,
+        contents: Buffer.from(revData.hash)
+    };
+    ['cwd', 'base'].map((key) => revFile[key] = revData.file[key]);
+    return new Vinyl(revFile);
+}
 
 function handleFile(file, options = {}) {
     let hash;
@@ -34,19 +46,4 @@ function handleFile(file, options = {}) {
         file: file,
         hash: hash
     };
-}
-
-function createRevFile(revData, options = {}) {
-    const path = typeof options.transformPath === 'function'
-        ? options.transformPath(revData.file.path)
-        : `${revData.file.path}.rev.txt`;
-    if (path === revData.file.path) {
-        throw new Error(`[gulp-assembly-rev-manifest] The RevFile path must be different from the OrigFile path!`);
-    }
-    let revFile = {
-        path: path,
-        contents: Buffer.from(revData.hash)
-    };
-    ['cwd', 'base'].map((key) => revFile[key] = revData.file[key]);
-    return new Vinyl(revFile);
 }
